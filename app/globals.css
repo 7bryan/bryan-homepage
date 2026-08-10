@@ -1,26 +1,116 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  /* Colors */
+  --color-base: #16161e;
+  --color-elevated: #1c1e2a;
+  --color-overlay: #232535;
+  --color-edge: #2a2d3e;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-ink-100: #e3e5ec;
+  --color-ink-300: #c8ccd8;
+  --color-ink-500: #8b90a8;
+  --color-ink-700: #5a5f78;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --color-accent-blue: #7dabf8;
+  --color-accent-green: #9ece6a;
+  --color-accent-amber: #e0af68;
+  --color-accent-red: #f7768e;
+  --color-accent-purple: #bb9af7;
+
+  /* Fonts */
+  --font-mono: var(--font-mono), monospace;
+  --font-sans: var(--font-sans), sans-serif;
+
+  /* Animations */
+  --animate-blink: blink 1s step-end infinite;
+  --animate-fade-up: fadeUp 0.4s ease-out forwards;
+
+  @keyframes blink {
+    0%,
+    49% {
+      opacity: 1;
+    }
+
+    50%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes fadeUp {
+    0% {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-base text-ink-300 antialiased;
+  background-image:
+    linear-gradient(rgba(200, 204, 216, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200, 204, 216, 0.035) 1px, transparent 1px);
+  background-size: 42px 42px;
+  background-position: center top;
+}
+
+::selection {
+  background-color: rgba(125, 171, 248, 0.25);
+  color: #e3e5ec;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #16161e;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2d3e;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3e56;
+}
+
+/* Visible keyboard focus everywhere, styled to match the terminal motif */
+:focus-visible {
+  outline: 2px solid #7dabf8;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.prompt::before {
+  content: "$ ";
+  color: #9ece6a;
 }
