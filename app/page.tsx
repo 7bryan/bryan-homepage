@@ -1,116 +1,95 @@
 import Link from "next/link";
-import Terminal from "@/components/Terminal";
+import AmbientGlow from "@/components/AmbientGlow";
+import SocialRow from "@/components/SocialRow";
 import { featuredProjects } from "@/lib/projects";
-
-const stack = [
-  { dir: "web/", items: ["Next.js", "React", "FastAPI", "Flask"] },
-  { dir: "systems/", items: ["Go", "Python", "Linux"] },
-  { dir: "security/", items: ["CTF", "reverse eng.", "crypto challenges"] },
-];
 
 export default function HomePage() {
   return (
-    <div className="mx-auto max-w-5xl px-5 sm:px-8">
-      <section className="pt-14 sm:pt-20 pb-16 grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:items-center">
-        <div>
-          <p className="font-mono text-xs text-accent-green mb-3">
-            // personal site & portfolio
-          </p>
-          <h1 className="font-mono text-3xl sm:text-4xl md:text-[2.75rem] leading-tight text-ink-100 tracking-tight">
-            Bryan
-            <span className="text-ink-700"> — </span>
-            <span className="text-accent-blue">builder</span> of small, sharp
-            things.
+    <div className="relative">
+      <section className="relative mx-auto max-w-5xl px-5 sm:px-8 min-h-[calc(100vh-6rem)] flex flex-col justify-center pb-24">
+        <AmbientGlow />
+
+        <div className="max-w-2xl">
+          <SocialRow />
+
+          <h1 className="font-display font-extrabold text-5xl sm:text-6xl md:text-7xl leading-[1.02] text-ink-100 mt-8 tracking-tight">
+            Hey, I&apos;m Bryan.
           </h1>
-          <p className="mt-5 text-ink-500 text-sm sm:text-base max-w-md leading-relaxed">
-            Full-stack and systems development, with a running interest in
-            security and CTF work. This site is the log of what I've shipped.
+
+          <p className="mt-5 text-ink-300 text-base sm:text-lg leading-relaxed max-w-xl">
+            Full-stack &amp; systems developer, building web apps, tools, and
+            the occasional CLI — with a running interest in security.
           </p>
-          <div className="mt-8 flex items-center gap-3 font-mono text-sm">
+
+          <p className="mt-6 font-display text-lg sm:text-xl text-ink-100">
+            I build things, break things in CTFs, and write it down
+            <span className="inline-block w-[2px] h-5 -mb-1 ml-1 bg-accent animate-blink align-middle" />
+          </p>
+
+          <div className="mt-10 flex flex-wrap items-center gap-4">
             <Link
               href="/projects"
-              className="px-4 py-2 rounded border border-accent-blue/40 text-accent-blue hover:bg-accent-blue/10 transition-colors"
+              className="inline-flex items-center gap-2 text-sm font-medium text-ink-100 border border-edge rounded-full px-5 py-2.5 hover:bg-white/[0.06] transition-colors"
             >
-              view projects
+              View my work
+              <span aria-hidden>→</span>
             </Link>
             <Link
               href="/contact"
-              className="px-4 py-2 rounded border border-edge text-ink-500 hover:text-ink-100 hover:border-ink-700 transition-colors"
+              className="text-sm font-medium text-ink-500 hover:text-ink-100 transition-colors"
             >
-              get in touch
+              Get in touch
             </Link>
           </div>
         </div>
 
-        <Terminal />
-      </section>
-
-      <section className="pb-16">
-        <div className="flex items-baseline justify-between mb-5">
-          <h2 className="font-mono text-sm text-ink-500">
-            <span className="text-accent-purple">$</span> ls stack/ -R
-          </h2>
-        </div>
-        <div className="grid sm:grid-cols-3 gap-4">
-          {stack.map((s) => (
-            <div
-              key={s.dir}
-              className="rounded-lg border border-edge bg-elevated p-4"
-            >
-              <p className="font-mono text-xs text-accent-amber mb-2">
-                {s.dir}
-              </p>
-              <ul className="space-y-1">
-                {s.items.map((item) => (
-                  <li
-                    key={item}
-                    className="font-mono text-xs text-ink-300 pl-3 relative before:content-['·'] before:absolute before:left-0 before:text-ink-700"
-                  >
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+        <div className="hidden sm:flex flex-col items-center gap-2 absolute bottom-6 left-1/2 -translate-x-1/2 text-ink-700">
+          <span className="text-[10px] tracking-[0.2em]">SCROLL</span>
+          <span className="w-5 h-8 rounded-full border border-edge flex items-start justify-center p-1.5">
+            <span className="w-1 h-1.5 rounded-full bg-ink-500 animate-fade-up" />
+          </span>
         </div>
       </section>
 
-      <section className="pb-20">
-        <div className="flex items-baseline justify-between mb-5">
-          <h2 className="font-mono text-sm text-ink-500">
-            <span className="text-accent-purple">$</span> git log --oneline
-            -3
+      <section className="mx-auto max-w-5xl px-5 sm:px-8 pb-28">
+        <div className="flex items-baseline justify-between mb-8">
+          <h2 className="font-display font-semibold text-xl sm:text-2xl text-ink-100">
+            Featured work
           </h2>
           <Link
             href="/projects"
-            className="font-mono text-xs text-accent-blue hover:underline"
+            className="text-sm text-ink-500 hover:text-ink-100 transition-colors"
           >
-            full log →
+            View all →
           </Link>
         </div>
-        <ul className="space-y-3">
+
+        <div className="grid sm:grid-cols-3 gap-4">
           {featuredProjects.map((p) => (
-            <li
+            <Link
               key={p.slug}
-              className="border border-edge rounded-lg bg-elevated px-4 sm:px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4"
+              href="/projects"
+              className="group border border-edge rounded-2xl p-5 flex flex-col hover:bg-white/[0.03] hover:border-ink-700 transition-colors"
             >
-              <span className="font-mono text-xs text-accent-amber shrink-0">
-                {p.hash}
-              </span>
-              <span className="flex-1 min-w-0">
-                <span className="block font-mono text-sm text-ink-100">
-                  {p.title}
-                </span>
-                <span className="block text-xs text-ink-500 mt-0.5">
-                  {p.summary}
-                </span>
-              </span>
-              <span className="font-mono text-xs text-ink-700 shrink-0">
-                {p.date}
-              </span>
-            </li>
+              <h3 className="font-display font-medium text-ink-100">
+                {p.title}
+              </h3>
+              <p className="text-ink-500 text-sm mt-1.5 leading-relaxed">
+                {p.summary}
+              </p>
+              <div className="flex flex-wrap gap-1.5 mt-4">
+                {p.tags.slice(0, 2).map((tag) => (
+                  <span
+                    key={tag}
+                    className="text-[11px] px-2 py-1 rounded-full border border-edge-soft text-ink-500"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </Link>
           ))}
-        </ul>
+        </div>
       </section>
     </div>
   );
