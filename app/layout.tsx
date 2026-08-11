@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono, IBM_Plex_Sans } from "next/font/google";
+import { Archivo, Inter } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 
-const mono = JetBrains_Mono({
+const display = Archivo({
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-mono",
+  weight: ["600", "700", "800"],
+  variable: "--font-display",
   display: "swap",
 });
 
-const sans = IBM_Plex_Sans({
+const sans = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
   variable: "--font-sans",
@@ -30,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${mono.variable} ${sans.variable}`}>
+    <html lang="en" className={`${display.variable} ${sans.variable}`}>
       <body className="min-h-screen flex flex-col font-sans">
         <Nav />
         <main className="flex-1 w-full">{children}</main>
