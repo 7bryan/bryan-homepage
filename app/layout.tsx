@@ -3,6 +3,7 @@ import { Archivo, Inter } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import AmbientGlow from "@/components/AmbientGlow";
 
 const display = Archivo({
   subsets: ["latin"],
@@ -32,6 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${display.variable} ${sans.variable}`}>
       <body className="min-h-screen flex flex-col font-sans">
+        <AmbientGlow />
         <Nav />
         <main className="flex-1 w-full">{children}</main>
         <Footer />
