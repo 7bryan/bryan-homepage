@@ -1,5 +1,4 @@
 import Link from "next/link";
-import AmbientGlow from "@/components/AmbientGlow";
 import SocialRow from "@/components/SocialRow";
 import { featuredProjects } from "@/lib/projects";
 
@@ -7,8 +6,6 @@ export default function HomePage() {
   return (
     <div className="relative">
       <section className="relative mx-auto max-w-5xl px-5 sm:px-8 min-h-[calc(100vh-6rem)] flex flex-col justify-center pb-24">
-        <AmbientGlow />
-
         <div className="max-w-2xl">
           <SocialRow />
 
@@ -41,13 +38,6 @@ export default function HomePage() {
               Get in touch
             </Link>
           </div>
-        </div>
-
-        <div className="hidden sm:flex flex-col items-center gap-2 absolute bottom-6 left-1/2 -translate-x-1/2 text-ink-700">
-          <span className="text-[10px] tracking-[0.2em]">SCROLL</span>
-          <span className="w-5 h-8 rounded-full border border-edge flex items-start justify-center p-1.5">
-            <span className="w-1 h-1.5 rounded-full bg-ink-500 animate-fade-up" />
-          </span>
         </div>
       </section>
 
