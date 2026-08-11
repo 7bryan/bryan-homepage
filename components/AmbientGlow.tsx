@@ -2,13 +2,13 @@ export default function AmbientGlow() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-0 overflow-hidden -z-10"
+      className="pointer-events-none fixed inset-0 overflow-hidden -z-10"
     >
       <div
-        className="absolute top-[-10%] right-[-5%] w-[46rem] h-[46rem] rounded-full blur-[130px] opacity-[0.14] animate-drift"
+        className="absolute top-[-15%] right-[-10%] w-[50rem] h-[50rem] rounded-full blur-[160px] opacity-[0.13] animate-drift"
         style={{
           background:
-            "radial-gradient(circle, rgba(124,147,255,0.9) 0%, rgba(124,147,255,0) 70%)",
+            "radial-gradient(circle, rgba(124,147,255,0.9) 0%, rgba(124,147,255,0) 65%)",
         }}
       />
     </div>
