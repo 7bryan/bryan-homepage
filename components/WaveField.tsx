@@ -12,6 +12,8 @@ type WaveLine = {
   speed2: number;
   phase: number;
   alpha: number;
+  lineWidth: number;
+  glow: boolean;
 };
 
 export default function WaveField() {
@@ -23,7 +25,7 @@ export default function WaveField() {
     if (!canvas || !ctx) return;
 
     const reduceMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
+      "(prefers-reduced-motion: reduce)"
     ).matches;
 
     let width = 0;
@@ -33,19 +35,27 @@ export default function WaveField() {
     let time = 0;
 
     function buildLines() {
-      const count = Math.max(14, Math.min(26, Math.round(width / 90)));
-      // each line y pos at every x is the sum of two sines waves with different frequency
-      lines = Array.from({ length: count }, (_, i) => ({
-        baseY: ((i + 0.5) / count) * height,
-        amp1: 18 + Math.random() * 34,
-        amp2: 8 + Math.random() * 18,
-        freq1: 0.0018 + Math.random() * 0.0016,
-        freq2: 0.004 + Math.random() * 0.003,
-        speed1: 0.15 + Math.random() * 0.15,
-        speed2: 0.25 + Math.random() * 0.2,
-        phase: Math.random() * Math.PI * 2,
-        alpha: 0.035 + Math.random() * 0.05,
-      }));
+      const count = Math.max(8, Math.min(14, Math.round(width / 160)));
+      const spacing = height / count;
+      lines = Array.from({ length: count }, (_, i) => {
+        const isHighlight = Math.random() < 0.22;
+        return {
+          baseY:
+            (i + 0.5) * spacing + (Math.random() - 0.5) * spacing * 0.5,
+          amp1: 18 + Math.random() * 34,
+          amp2: 8 + Math.random() * 18,
+          freq1: 0.0018 + Math.random() * 0.0016,
+          freq2: 0.004 + Math.random() * 0.003,
+          speed1: 0.15 + Math.random() * 0.15,
+          speed2: 0.25 + Math.random() * 0.2,
+          phase: Math.random() * Math.PI * 2,
+          alpha: isHighlight
+            ? 0.12 + Math.random() * 0.08
+            : 0.025 + Math.random() * 0.035,
+          lineWidth: isHighlight ? 1.6 : 1.1 + Math.random() * 0.4,
+          glow: isHighlight,
+        };
+      });
     }
 
     function resize() {
@@ -77,9 +87,16 @@ export default function WaveField() {
           else ctx!.lineTo(x, y);
         }
         ctx!.strokeStyle = `rgba(255,255,255,${line.alpha})`;
-        ctx!.lineWidth = 1;
+        ctx!.lineWidth = line.lineWidth;
+        if (line.glow) {
+          ctx!.shadowColor = "rgba(255,255,255,0.35)";
+          ctx!.shadowBlur = 6;
+        } else {
+          ctx!.shadowBlur = 0;
+        }
         ctx!.stroke();
       }
+      ctx!.shadowBlur = 0;
     }
 
     function loop() {
