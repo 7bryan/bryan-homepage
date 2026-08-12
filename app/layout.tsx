@@ -4,6 +4,7 @@ import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import AmbientGlow from "@/components/AmbientGlow";
+import WaveField from "@/components/WaveField";
 
 const display = Archivo({
   subsets: ["latin"],
@@ -34,6 +35,7 @@ export default function RootLayout({
     <html lang="en" className={`${display.variable} ${sans.variable}`}>
       <body className="min-h-screen flex flex-col font-sans">
         <AmbientGlow />
+        <WaveField />
         <Nav />
         <main className="flex-1 w-full">{children}</main>
         <Footer />
