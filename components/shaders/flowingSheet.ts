@@ -25,6 +25,12 @@ export const vertexShader = /* glsl */ `
 
   uniform float uTime;
   uniform float uBaseWidth;
+  // Multiplies the whole cross-section outward. Used to render a second,
+  // "puffed out" copy of this exact geometry as a soft glow pass behind
+  // the main surface — safer than scaling the mesh's transform, since the
+  // curve isn't centered at the origin (object-space scale would shift it
+  // off-center rather than genuinely expanding its own silhouette).
+  uniform float uExpand;
 
   void main() {
     vUv = uv;
@@ -34,7 +40,7 @@ export const vertexShader = /* glsl */ `
     // safely positive (verified numerically before use).
     float widthFactor = 0.55 + 0.35 * sin(aU * 5.0 + uTime * 0.035) +
       0.25 * sin(aU * 11.0 - uTime * 0.025 + 1.3);
-    float width = uBaseWidth * max(0.22, widthFactor);
+    float width = uBaseWidth * max(0.22, widthFactor) * uExpand;
 
     float twist = 1.2 * sin(aU * 3.0 + uTime * 0.02);
     vec3 side = normalize(cos(twist) * aFrenetNormal + sin(twist) * aFrenetBinormal);
@@ -88,27 +94,53 @@ export const fragmentShader = /* glsl */ `
   void main() {
     vec3 N = normalize(vNormal);
     vec3 V = normalize(vViewDir);
-    // Lower power than before (was 2.2) — broadens the lit region. At 2.2,
-    // only grazing-angle edges were bright enough to read, and the broad
-    // front-facing middle of the sheet fell close to the alpha floor —
-    // that's almost certainly why it visually split into "two separate
-    // arcs" instead of one continuous mass.
-    float fresnel = pow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), 1.5);
+    float facing = clamp(abs(dot(N, V)), 0.0, 1.0);
 
-    // Blue-forward palette (deep navy base, royal-blue rim) — deliberately
-    // kept away from purple by keeping red well below green/blue.
-    vec3 base = vec3(0.02, 0.03, 0.05);
-    vec3 rim  = vec3(0.10, 0.17, 0.44);
+    // Two separate fresnel terms: a broad one for general edge lighting,
+    // and a much tighter one for a small "hot" highlight band — this pair
+    // is what gives a glass/liquid feel (a soft lit edge PLUS a narrower
+    // bright glint) rather than one uniform glow.
+    float fresnelBroad = pow(1.0 - facing, 1.6);
+    float fresnelTight = pow(1.0 - facing, 5.5);
+
+    // Layered material, dark to light: core -> indigo -> blue-violet rim.
+    vec3 core   = vec3(0.014, 0.018, 0.032);
+    vec3 mid    = vec3(0.05, 0.045, 0.13);
+    vec3 rim    = vec3(0.11, 0.14, 0.38);
+    vec3 hot    = vec3(0.22, 0.24, 0.5);
 
     float lengthShade = 0.55 + 0.45 * sin(vU * 2.2 + uTime * 0.02);
-    vec3 rimColor = rim * (0.6 + 0.5 * lengthShade) * (0.55 + 0.85 * vFoldShade);
 
-    // Ambient fill raised so front-facing sections stay clearly visible,
-    // not just the fresnel-lit edges — this is what keeps the form
-    // reading as one continuous piece rather than fading out in the middle.
-    vec3 color = base + rimColor * (0.3 + fresnel * 0.8);
-    float alpha = mix(0.32, 0.68, fresnel) * (0.78 + 0.4 * vFoldShade);
+    vec3 color = core;
+    color = mix(color, mid, clamp(vFoldShade * 0.7 + 0.15, 0.0, 1.0));
+    color = mix(color, rim, fresnelBroad * (0.6 + 0.5 * lengthShade));
+    color += hot * fresnelTight * 0.55; // restrained hot highlight, additive
+
+    // Pulled back from the previous version — kept visible/continuous
+    // (per the earlier "splits into two arcs" fix) but not brighter than
+    // the reference, which stays mostly dark with restrained highlights.
+    float alpha = mix(0.22, 0.5, fresnelBroad) * (0.75 + 0.35 * vFoldShade);
 
     gl_FragColor = vec4(color, alpha);
+  }
+`;
+
+// Simpler, broader, much fainter pass — reuses the same vertex shader with
+// uExpand > 1 to render a puffed-out duplicate of the surface behind the
+// main one, giving a soft outer glow without any blur/post-processing pass.
+export const fragmentShaderGlow = /* glsl */ `
+  varying vec3 vNormal;
+  varying vec3 vViewDir;
+
+  void main() {
+    vec3 N = normalize(vNormal);
+    vec3 V = normalize(vViewDir);
+    float facing = clamp(abs(dot(N, V)), 0.0, 1.0);
+    float fresnel = pow(1.0 - facing, 1.1);
+
+    vec3 glowColor = vec3(0.09, 0.11, 0.3);
+    float alpha = fresnel * 0.16; // deliberately faint — a halo, not a shape
+
+    gl_FragColor = vec4(glowColor, alpha);
   }
 `;

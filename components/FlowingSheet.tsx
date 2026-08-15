@@ -3,7 +3,11 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
-import { vertexShader, fragmentShader } from "./shaders/flowingSheet";
+import {
+  vertexShader,
+  fragmentShader,
+  fragmentShaderGlow,
+} from "./shaders/flowingSheet";
 
 const SEGMENTS = 200; // resolution along the curve's length
 const ROWS = 13; // resolution across the width — raised from 9 to smoothly
@@ -16,6 +20,7 @@ export default function FlowingSheet({
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
+  const glowMaterialRef = useRef<THREE.ShaderMaterial>(null);
   const { viewport } = useThree();
 
   const geometry = useMemo(() => {
@@ -107,18 +112,39 @@ export default function FlowingSheet({
       uTime: { value: 0 },
       // Increased again from the previous 0.42 — still read as too thin.
       uBaseWidth: { value: viewport.height * 0.62 },
+      uExpand: { value: 1.0 },
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
+  // Separate uniforms object for the glow pass — same base width/time, but
+  // puffed outward (uExpand > 1) to render a soft halo behind the main
+  // surface using the identical geometry and vertex math.
+  const glowUniforms = useMemo(
+    () => ({
+      uTime: { value: 0 },
+      uBaseWidth: { value: viewport.height * 0.62 },
+      uExpand: { value: 1.35 },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
   useFrame((state) => {
+    const vh = viewport.height;
     if (materialRef.current) {
-      materialRef.current.uniforms.uBaseWidth.value = viewport.height * 0.62;
+      materialRef.current.uniforms.uBaseWidth.value = vh * 0.62;
+    }
+    if (glowMaterialRef.current) {
+      glowMaterialRef.current.uniforms.uBaseWidth.value = vh * 0.62;
     }
     if (reduceMotion) return;
     if (materialRef.current) {
       materialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
+    }
+    if (glowMaterialRef.current) {
+      glowMaterialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
     }
     // Deliberately no group rotation this time — the spec was explicit
     // that the whole object should never spin; all motion now lives in
@@ -127,11 +153,23 @@ export default function FlowingSheet({
 
   return (
     <group ref={groupRef}>
-      {/* frustumCulled disabled: the vertex shader displaces geometry well
-          outside the raw "position" attribute's bounds (which only holds
-          the undisplaced curve centerline), so Three's automatic
-          bounding-sphere culling would be computed from the wrong data. */}
-      <mesh geometry={geometry} frustumCulled={false}>
+      {/* frustumCulled disabled on both meshes: the vertex shader displaces
+          geometry well outside the raw "position" attribute's bounds
+          (which only holds the undisplaced curve centerline), so Three's
+          automatic bounding-sphere culling would be computed from the
+          wrong data. */}
+      <mesh geometry={geometry} frustumCulled={false} renderOrder={0}>
+        <shaderMaterial
+          ref={glowMaterialRef}
+          uniforms={glowUniforms}
+          vertexShader={vertexShader}
+          fragmentShader={fragmentShaderGlow}
+          transparent
+          depthWrite={false}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      <mesh geometry={geometry} frustumCulled={false} renderOrder={1}>
         <shaderMaterial
           ref={materialRef}
           uniforms={uniforms}
