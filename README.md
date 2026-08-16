@@ -1,6 +1,6 @@
-# Bryan — Portfolio
+# Bryan Homepage
 
-Personal site + portfolio. Next.js 14 (App Router), React, TypeScript, Tailwind CSS.
+Personal site + portfolio. Next.js 14 (App Router), React, TypeScript, Tailwind CSS, Three.js.
 
 ## Getting started
 
