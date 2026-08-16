@@ -1,3 +1,5 @@
+// DEVELOPMENT NOTE or whatever:
+
 // Flowing sheet shader — v3. v2 fixed the "flat ribbon" problem by adding
 // rows across the width, but the surface still lit like folded PAPER: each
 // vertex used one flat, hand-picked normal direction (the ribbon's cross
@@ -128,6 +130,15 @@ export const fragmentShader = /* glsl */ `
   varying float vFoldShade;
   uniform float uTime;
 
+  // The palette used to be hardcoded here. Now it's driven by uniforms so
+  // each page can hand this shader a different color scheme (see uColor*
+  // defaults / theme presets in FlowingSheet.tsx) without touching any of
+  // the shape/lighting math above.
+  uniform vec3 uCore;
+  uniform vec3 uMid;
+  uniform vec3 uRim;
+  uniform vec3 uHot;
+
   void main() {
     vec3 N = normalize(vNormal);
     vec3 V = normalize(vViewDir);
@@ -138,18 +149,12 @@ export const fragmentShader = /* glsl */ `
     float fresnelBroad = pow(1.0 - facing, 1.3);
     float fresnelTight = pow(1.0 - facing, 3.5);
 
-    // Layered material, dark to light: core -> indigo -> blue-violet rim.
-    vec3 core   = vec3(0.014, 0.018, 0.032);
-    vec3 mid    = vec3(0.05, 0.045, 0.13);
-    vec3 rim    = vec3(0.11, 0.14, 0.38);
-    vec3 hot    = vec3(0.22, 0.24, 0.5);
-
     float lengthShade = 0.55 + 0.45 * sin(vU * 2.2 + uTime * 0.02);
 
-    vec3 color = core;
-    color = mix(color, mid, clamp(vFoldShade * 0.55 + 0.25, 0.0, 1.0));
-    color = mix(color, rim, fresnelBroad * (0.55 + 0.45 * lengthShade));
-    color += hot * fresnelTight * 0.4; // gentler highlight than v2
+    vec3 color = uCore;
+    color = mix(color, uMid, clamp(vFoldShade * 0.55 + 0.25, 0.0, 1.0));
+    color = mix(color, uRim, fresnelBroad * (0.55 + 0.45 * lengthShade));
+    color += uHot * fresnelTight * 0.4; // gentler highlight than v2
 
     float alpha = mix(0.24, 0.46, fresnelBroad) * (0.82 + 0.22 * vFoldShade);
 
@@ -164,15 +169,16 @@ export const fragmentShaderGlow = /* glsl */ `
   varying vec3 vNormal;
   varying vec3 vViewDir;
 
+  uniform vec3 uGlowColor;
+
   void main() {
     vec3 N = normalize(vNormal);
     vec3 V = normalize(vViewDir);
     float facing = clamp(abs(dot(N, V)), 0.0, 1.0);
     float fresnel = pow(1.0 - facing, 1.0);
 
-    vec3 glowColor = vec3(0.09, 0.11, 0.3);
     float alpha = fresnel * 0.16; // deliberately faint — a halo, not a shape
 
-    gl_FragColor = vec4(glowColor, alpha);
+    gl_FragColor = vec4(uGlowColor, alpha);
   }
 `;
