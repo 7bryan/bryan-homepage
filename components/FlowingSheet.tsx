@@ -10,8 +10,8 @@ import {
 } from "./shaders/flowingSheet";
 
 const SEGMENTS = 200; // resolution along the curve's length
-const ROWS = 13; // resolution across the width — raised from 9 to smoothly
-// resolve the newly added coarse fold layer without faceting.
+const ROWS = 18; // resolution across the width — raised from 13 for a
+// smoother silhouette now that normals are curvature-based (see shader).
 
 export default function FlowingSheet({
   reduceMotion,
@@ -23,7 +23,7 @@ export default function FlowingSheet({
   const glowMaterialRef = useRef<THREE.ShaderMaterial>(null);
   const { viewport } = useThree();
 
-  const geometry = useMemo(() => {
+  const { geometry, curveLength } = useMemo(() => {
     const vw = viewport.width;
     const vh = viewport.height;
 
@@ -44,6 +44,7 @@ export default function FlowingSheet({
       new THREE.Vector3((1.2 + xOffset) * vw, 0.35 * vh, 0.3),
     ];
     const curve = new THREE.CatmullRomCurve3(points, false, "catmullrom", 0.55);
+    const curveLength = curve.getLength();
 
     const framePoints = curve.getSpacedPoints(SEGMENTS);
     const frames = curve.computeFrenetFrames(SEGMENTS, false);
@@ -105,7 +106,7 @@ export default function FlowingSheet({
     geo.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
     geo.setIndex(indices);
 
-    return geo;
+    return { geometry: geo, curveLength };
   }, [viewport.width, viewport.height]);
 
   const uniforms = useMemo(
@@ -114,9 +115,10 @@ export default function FlowingSheet({
       // Increased again from the previous 0.42 — still read as too thin.
       uBaseWidth: { value: viewport.height * 0.62 },
       uExpand: { value: 1.0 },
+      uCurveLength: { value: curveLength },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [curveLength]
   );
 
   // Separate uniforms object for the glow pass — same base width/time, but
@@ -127,9 +129,10 @@ export default function FlowingSheet({
       uTime: { value: 0 },
       uBaseWidth: { value: viewport.height * 0.62 },
       uExpand: { value: 1.35 },
+      uCurveLength: { value: curveLength },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [curveLength]
   );
 
   useFrame((state) => {
