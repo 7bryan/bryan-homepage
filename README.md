@@ -22,13 +22,22 @@ app/
   about/page.tsx         bio / timeline
   contact/page.tsx       contact page shell
 components/
+  shaders/
+    flowingSheet.ts
   Nav.tsx               breadcrumb-style nav
   Footer.tsx            terminal-prompt footer
   Terminal.tsx           typed hero terminal
   CommitLog.tsx          expandable project row (used on /projects)
   ContactForm.tsx        client-side contact form
+  FlowingSheet.tsx
+  AmbientGlow.tsx
+  SocialRow.tsx
 lib/
   projects.ts            single source of truth for project data
+public/
+  projects/              projects thumbnails
+    devpulse.png
+    tomatab.png
 ```
 
 ## Design notes
@@ -42,9 +51,9 @@ lib/
   reorder projects — both the homepage's featured list and the full
   `/projects` log read from it.
 
-## Next steps
+<!--## Next steps
 
 - Wire `components/ContactForm.tsx` up to a real endpoint (an API route,
   Formspree, Resend, etc.) — it currently simulates a submit.
 - Swap the placeholder email/GitHub links in `components/Footer.tsx`.
-- Add real project links (`href`) in `lib/projects.ts` as repos go public.
+- Add real project links (`href`) in `lib/projects.ts` as repos go public.-->
