@@ -2,6 +2,8 @@
 
 Personal site + portfolio. Next.js 14 (App Router), React, TypeScript, Tailwind CSS, Three.js.
 
+https://bryan-homepage.vercel.app
+
 ## Getting started
 
 ```bash
