@@ -1,13 +1,22 @@
-// Flowing sheet shader — v2. The previous version's cross-section only had
-// two vertices (left/right edge), which meant no matter how much the width
-// varied, it could only ever read as a ribbon/strip. This version uses
-// several rows across the width (aRowT ranges continuously, not just -1/1),
-// each independently displaced by smooth large-scale fold functions that
-// vary across BOTH length (aU) and width (aRowT) — that's what produces
-// actual ridges/folds across the surface instead of a flat strip.
+// Flowing sheet shader — v3. v2 fixed the "flat ribbon" problem by adding
+// rows across the width, but the surface still lit like folded PAPER: each
+// vertex used one flat, hand-picked normal direction (the ribbon's cross
+// vector) regardless of how much the fold math actually bent the surface
+// at that point. That mismatch between "how it's shaped" and "how it's
+// lit" is exactly what reads as stiff paper instead of liquid glass.
 //
-// All shape variation remains pure sine/cosine (zero noise) — guaranteed
-// to stay large-scale and never drift into visible texture.
+// Fix: compute the REAL surface normal analytically, via central
+// differences of the same displacement function used to place the vertex
+// (sample two neighbors along the length and two across the width, take
+// the cross product of the resulting tangent vectors). Now the lighting
+// continuously follows the actual curvature of every fold, which is what
+// gives a smooth, liquid look instead of a faceted, papery one.
+//
+// Shading itself was also softened: lower-contrast fold shading, gentler
+// fresnel falloffs, and calmer "fine" fold amplitude relative to the
+// broad/coarse fold — fewer small crumples, more big smooth sweeps.
+//
+// All shape variation remains pure sine/cosine (zero noise).
 
 export const vertexShader = /* glsl */ `
   attribute vec3 aCenter;
@@ -27,57 +36,85 @@ export const vertexShader = /* glsl */ `
   uniform float uBaseWidth;
   // Multiplies the whole cross-section outward. Used to render a second,
   // "puffed out" copy of this exact geometry as a soft glow pass behind
-  // the main surface — safer than scaling the mesh's transform, since the
-  // curve isn't centered at the origin (object-space scale would shift it
-  // off-center rather than genuinely expanding its own silhouette).
+  // the main surface.
   uniform float uExpand;
+  // Total world-space arc length of the base curve — lets us convert a
+  // small step in aU into a small step in world space, so we can sample a
+  // "neighboring" point along the curve for the normal calculation below.
+  uniform float uCurveLength;
+
+  // Same displacement math as before, just factored into a function so it
+  // can be evaluated at the real vertex AND at its neighbors (for the
+  // normal). u/rowT/center/tangent/fn/fb are passed explicitly rather than
+  // reading attributes directly, so it can be reused for neighbor samples.
+  vec3 computeDisplaced(float u, float rowT, vec3 center, vec3 tangent, vec3 fn, vec3 fb) {
+    float widthFactor = 0.55 + 0.35 * sin(u * 5.0 + uTime * 0.035) +
+      0.25 * sin(u * 11.0 - uTime * 0.025 + 1.3);
+    float w = uBaseWidth * max(0.22, widthFactor) * uExpand;
+
+    float twist = 1.2 * sin(u * 3.0 + uTime * 0.02);
+    vec3 side = normalize(cos(twist) * fn + sin(twist) * fb);
+    vec3 normalDir = normalize(cross(side, tangent));
+
+    // Fine layer toned down relative to the coarse layer vs. v2 — reads as
+    // a couple of big smooth sweeps with gentle secondary ripple, rather
+    // than many small crumples.
+    float foldSideFine = w * (
+      0.3 * sin(u * 2.2 + rowT * 1.6 + uTime * 0.02) +
+      0.18 * sin(u * 3.7 - rowT * 2.1 - uTime * 0.015 + 2.0)
+    );
+    float foldSideCoarse = w * 0.4 * sin(u * 1.1 + rowT * 0.8 + uTime * 0.012 + 0.5);
+    float foldSide = foldSideFine + foldSideCoarse;
+
+    float foldDepthFine = w * (
+      0.42 * sin(u * 1.7 + rowT * 2.4 + uTime * 0.018 + 1.0) +
+      0.24 * cos(u * 2.9 - rowT * 1.3 + uTime * 0.012)
+    );
+    float foldDepthCoarse = w * 0.5 * sin(u * 0.9 - rowT * 0.6 + uTime * 0.01 + 2.2);
+    float foldDepth = foldDepthFine + foldDepthCoarse;
+
+    return center + side * (rowT * w * 0.5 + foldSide) + normalDir * foldDepth;
+  }
 
   void main() {
     vUv = uv;
     vU = aU;
 
-    // Base width along the ribbon's length — smooth, low-frequency, always
-    // safely positive (verified numerically before use).
-    float widthFactor = 0.55 + 0.35 * sin(aU * 5.0 + uTime * 0.035) +
-      0.25 * sin(aU * 11.0 - uTime * 0.025 + 1.3);
-    float width = uBaseWidth * max(0.22, widthFactor) * uExpand;
-
     float twist = 1.2 * sin(aU * 3.0 + uTime * 0.02);
     vec3 side = normalize(cos(twist) * aFrenetNormal + sin(twist) * aFrenetBinormal);
     vec3 normalDir = normalize(cross(side, aTangent));
 
-    // Fold displacement, at TWO scales layered together: a coarse, large
-    // fold (broad gradual bends) plus a finer ripple on top of it. Single-
-    // frequency folding read as one smooth undulation rather than distinct
-    // folds — layering two frequencies is what gives "multiple gradual
-    // bends" rather than one gentle wave.
-    float foldSideFine = width * (
-      0.5 * sin(aU * 2.2 + aRowT * 1.6 + uTime * 0.02) +
-      0.3 * sin(aU * 3.7 - aRowT * 2.1 - uTime * 0.015 + 2.0)
-    );
-    float foldSideCoarse = width * 0.4 * sin(aU * 1.1 + aRowT * 0.8 + uTime * 0.012 + 0.5);
-    float foldSide = foldSideFine + foldSideCoarse;
+    vec3 displaced = computeDisplaced(aU, aRowT, aCenter, aTangent, aFrenetNormal, aFrenetBinormal);
 
-    float foldDepthFine = width * (
-      0.7 * sin(aU * 1.7 + aRowT * 2.4 + uTime * 0.018 + 1.0) +
-      0.4 * cos(aU * 2.9 - aRowT * 1.3 + uTime * 0.012)
-    );
-    float foldDepthCoarse = width * 0.5 * sin(aU * 0.9 - aRowT * 0.6 + uTime * 0.01 + 2.2);
-    float foldDepth = foldDepthFine + foldDepthCoarse;
+    // --- Analytic normal via central differences ---
+    float epsU = 0.35 / 200.0;
+    float epsV = 0.06;
 
-    vec3 displaced = aCenter
-      + side * (aRowT * width * 0.5 + foldSide)
-      + normalDir * foldDepth;
+    vec3 centerU1 = aCenter + aTangent * (epsU * uCurveLength);
+    vec3 centerU0 = aCenter - aTangent * (epsU * uCurveLength);
 
-    // Ties fragment shading to the fold structure (ridges read brighter,
-    // valleys darker), with contrast sharpened (pow > 1) so ridges vs.
-    // valleys are clearly distinguishable rather than blending into one
-    // smooth gradient.
+    vec3 pU1 = computeDisplaced(aU + epsU, aRowT, centerU1, aTangent, aFrenetNormal, aFrenetBinormal);
+    vec3 pU0 = computeDisplaced(aU - epsU, aRowT, centerU0, aTangent, aFrenetNormal, aFrenetBinormal);
+    vec3 pV1 = computeDisplaced(aU, aRowT + epsV, aCenter, aTangent, aFrenetNormal, aFrenetBinormal);
+    vec3 pV0 = computeDisplaced(aU, aRowT - epsV, aCenter, aTangent, aFrenetNormal, aFrenetBinormal);
+
+    vec3 dPdU = pU1 - pU0;
+    vec3 dPdV = pV1 - pV0;
+    vec3 surfaceNormal = normalize(cross(dPdV, dPdU));
+
+    // Keep the normal pointing to the same general side as the ribbon's
+    // natural outward direction, so lighting never flips inside-out.
+    if (dot(surfaceNormal, normalDir) < 0.0) {
+      surfaceNormal = -surfaceNormal;
+    }
+
+    // Softer fold-shade signal — same fold phase as before, gentler
+    // contrast so ridges fade into valleys smoothly instead of banding.
     float foldShadeRaw = 0.5 + 0.5 * sin(aU * 1.7 + aRowT * 2.4 + uTime * 0.018 + 1.0);
-    vFoldShade = pow(foldShadeRaw, 1.7);
+    vFoldShade = pow(foldShadeRaw, 1.05);
 
     vec4 mvPosition = modelViewMatrix * vec4(displaced, 1.0);
-    vNormal = normalize(normalMatrix * normalDir);
+    vNormal = normalize(normalMatrix * surfaceNormal);
     vViewDir = normalize(-mvPosition.xyz);
     gl_Position = projectionMatrix * mvPosition;
   }
@@ -96,12 +133,10 @@ export const fragmentShader = /* glsl */ `
     vec3 V = normalize(vViewDir);
     float facing = clamp(abs(dot(N, V)), 0.0, 1.0);
 
-    // Two separate fresnel terms: a broad one for general edge lighting,
-    // and a much tighter one for a small "hot" highlight band — this pair
-    // is what gives a glass/liquid feel (a soft lit edge PLUS a narrower
-    // bright glint) rather than one uniform glow.
-    float fresnelBroad = pow(1.0 - facing, 1.6);
-    float fresnelTight = pow(1.0 - facing, 5.5);
+    // Both fresnel terms softened vs. v2 — broader, lower-contrast falloff
+    // reads as smooth glass rather than a hard-edged glint.
+    float fresnelBroad = pow(1.0 - facing, 1.3);
+    float fresnelTight = pow(1.0 - facing, 3.5);
 
     // Layered material, dark to light: core -> indigo -> blue-violet rim.
     vec3 core   = vec3(0.014, 0.018, 0.032);
@@ -112,14 +147,11 @@ export const fragmentShader = /* glsl */ `
     float lengthShade = 0.55 + 0.45 * sin(vU * 2.2 + uTime * 0.02);
 
     vec3 color = core;
-    color = mix(color, mid, clamp(vFoldShade * 0.7 + 0.15, 0.0, 1.0));
-    color = mix(color, rim, fresnelBroad * (0.6 + 0.5 * lengthShade));
-    color += hot * fresnelTight * 0.55; // restrained hot highlight, additive
+    color = mix(color, mid, clamp(vFoldShade * 0.55 + 0.25, 0.0, 1.0));
+    color = mix(color, rim, fresnelBroad * (0.55 + 0.45 * lengthShade));
+    color += hot * fresnelTight * 0.4; // gentler highlight than v2
 
-    // Pulled back from the previous version — kept visible/continuous
-    // (per the earlier "splits into two arcs" fix) but not brighter than
-    // the reference, which stays mostly dark with restrained highlights.
-    float alpha = mix(0.22, 0.5, fresnelBroad) * (0.75 + 0.35 * vFoldShade);
+    float alpha = mix(0.24, 0.46, fresnelBroad) * (0.82 + 0.22 * vFoldShade);
 
     gl_FragColor = vec4(color, alpha);
   }
@@ -136,7 +168,7 @@ export const fragmentShaderGlow = /* glsl */ `
     vec3 N = normalize(vNormal);
     vec3 V = normalize(vViewDir);
     float facing = clamp(abs(dot(N, V)), 0.0, 1.0);
-    float fresnel = pow(1.0 - facing, 1.1);
+    float fresnel = pow(1.0 - facing, 1.0);
 
     vec3 glowColor = vec3(0.09, 0.11, 0.3);
     float alpha = fresnel * 0.16; // deliberately faint — a halo, not a shape
