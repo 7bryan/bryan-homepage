@@ -1,6 +1,7 @@
 "use client";
 
 import { useFrame, useThree } from "@react-three/fiber";
+import { usePathname } from "next/navigation";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import {
@@ -13,11 +14,87 @@ const SEGMENTS = 200; // resolution along the curve's length
 const ROWS = 18; // resolution across the width — raised from 13 for a
 // smoother silhouette now that normals are curvature-based (see shader).
 
+// Color presets — each is [core, mid, rim, hot, glow] as 0..1 RGB triples.
+// Same brightness/contrast balance as the original indigo palette, just
+// hue-shifted, so every theme stays equally "restrained/dark" rather than
+// some looking washed out or blown out relative to the others.
+export const FLOWING_SHEET_THEMES = {
+  // Default — cool indigo/blue-violet (Home).
+  indigo: {
+    core: [0.014, 0.018, 0.032],
+    mid: [0.05, 0.045, 0.13],
+    rim: [0.11, 0.14, 0.38],
+    hot: [0.22, 0.24, 0.5],
+    glow: [0.09, 0.11, 0.3],
+  },
+  // Magenta/violet (e.g. Projects).
+  magenta: {
+    core: [0.03, 0.012, 0.03],
+    mid: [0.13, 0.03, 0.12],
+    rim: [0.42, 0.08, 0.35],
+    hot: [0.55, 0.15, 0.45],
+    glow: [0.32, 0.07, 0.28],
+  },
+  // Teal/cyan (e.g. About).
+  teal: {
+    core: [0.01, 0.03, 0.03],
+    mid: [0.03, 0.12, 0.12],
+    rim: [0.07, 0.35, 0.38],
+    hot: [0.15, 0.5, 0.5],
+    glow: [0.06, 0.28, 0.3],
+  },
+  // Aurora green (e.g. Writing).
+  aurora: {
+    core: [0.012, 0.03, 0.015],
+    mid: [0.03, 0.13, 0.05],
+    rim: [0.08, 0.4, 0.15],
+    hot: [0.2, 0.55, 0.25],
+    glow: [0.07, 0.32, 0.12],
+  },
+  // Warm amber/gold (e.g. Resume/Contact).
+  amber: {
+    core: [0.03, 0.02, 0.01],
+    mid: [0.13, 0.09, 0.02],
+    rim: [0.4, 0.28, 0.06],
+    hot: [0.55, 0.4, 0.12],
+    glow: [0.32, 0.22, 0.05],
+  },
+} as const;
+
+export type FlowingSheetTheme = keyof typeof FLOWING_SHEET_THEMES;
+
+// Route → theme mapping, used when no explicit `theme` prop is passed.
+// EDIT THIS to match your actual routes/desired colors — this is the one
+// place that controls "which page gets which color."
+const ROUTE_THEMES: Record<string, FlowingSheetTheme> = {
+  "/": "indigo",
+  "/projects": "teal",
+  "/about": "magenta",
+  "/contact": "amber",
+};
+
+function themeForPathname(pathname: string | null): FlowingSheetTheme {
+  if (!pathname) return "indigo";
+  if (ROUTE_THEMES[pathname]) return ROUTE_THEMES[pathname];
+  // Fallback for nested routes, e.g. "/projects/some-slug" still gets the
+  // "/projects" theme.
+  const topLevel = "/" + (pathname.split("/")[1] ?? "");
+  return ROUTE_THEMES[topLevel] ?? "indigo";
+}
+
 export default function FlowingSheet({
   reduceMotion,
+  theme: themeProp,
 }: {
   reduceMotion: boolean;
+  // Optional explicit override. If omitted, the theme is derived
+  // automatically from the current route via ROUTE_THEMES above — this is
+  // what makes the color change on navigation even when FlowingSheet is
+  // mounted once in a persistent layout rather than per-page.
+  theme?: FlowingSheetTheme;
 }) {
+  const pathname = usePathname();
+  const theme = themeProp ?? themeForPathname(pathname);
   const groupRef = useRef<THREE.Group>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const glowMaterialRef = useRef<THREE.ShaderMaterial>(null);
@@ -96,11 +173,20 @@ export default function FlowingSheet({
     }
 
     const geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    geo.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(positions, 3),
+    );
     geo.setAttribute("aCenter", new THREE.Float32BufferAttribute(centers, 3));
     geo.setAttribute("aTangent", new THREE.Float32BufferAttribute(tangents, 3));
-    geo.setAttribute("aFrenetNormal", new THREE.Float32BufferAttribute(frenetNormals, 3));
-    geo.setAttribute("aFrenetBinormal", new THREE.Float32BufferAttribute(frenetBinormals, 3));
+    geo.setAttribute(
+      "aFrenetNormal",
+      new THREE.Float32BufferAttribute(frenetNormals, 3),
+    );
+    geo.setAttribute(
+      "aFrenetBinormal",
+      new THREE.Float32BufferAttribute(frenetBinormals, 3),
+    );
     geo.setAttribute("aU", new THREE.Float32BufferAttribute(us, 1));
     geo.setAttribute("aRowT", new THREE.Float32BufferAttribute(rowTs, 1));
     geo.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
@@ -109,6 +195,8 @@ export default function FlowingSheet({
     return { geometry: geo, curveLength };
   }, [viewport.width, viewport.height]);
 
+  const palette = FLOWING_SHEET_THEMES[theme];
+
   const uniforms = useMemo(
     () => ({
       uTime: { value: 0 },
@@ -116,9 +204,13 @@ export default function FlowingSheet({
       uBaseWidth: { value: viewport.height * 0.62 },
       uExpand: { value: 1.0 },
       uCurveLength: { value: curveLength },
+      uCore: { value: new THREE.Color(...palette.core) },
+      uMid: { value: new THREE.Color(...palette.mid) },
+      uRim: { value: new THREE.Color(...palette.rim) },
+      uHot: { value: new THREE.Color(...palette.hot) },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [curveLength]
+    [curveLength, theme],
   );
 
   // Separate uniforms object for the glow pass — same base width/time, but
@@ -130,9 +222,10 @@ export default function FlowingSheet({
       uBaseWidth: { value: viewport.height * 0.62 },
       uExpand: { value: 1.35 },
       uCurveLength: { value: curveLength },
+      uGlowColor: { value: new THREE.Color(...palette.glow) },
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [curveLength]
+    [curveLength, theme],
   );
 
   useFrame((state) => {
