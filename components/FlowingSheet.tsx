@@ -32,15 +32,16 @@ export default function FlowingSheet({
     // component) to have zero intersection with the hero text's bounding
     // box, and to have ~12 local direction changes (genuine multi-lobe
     // folding, not one gentle S-curve).
+    const xOffset = 0.2; // shifts the whole curve right, in vw units — tweak this to move it further left/right
     const points = [
-      new THREE.Vector3(-1.3 * vw, 0.35 * vh, -0.3),
-      new THREE.Vector3(-0.95 * vw, 0.55 * vh, 0.4),
-      new THREE.Vector3(-0.55 * vw, 0.3 * vh, -0.4),
-      new THREE.Vector3(-0.15 * vw, 0.52 * vh, 0.5),
-      new THREE.Vector3(0.15 * vw, 0.1 * vh, -0.3),
-      new THREE.Vector3(0.5 * vw, 0.55 * vh, 0.4),
-      new THREE.Vector3(0.85 * vw, -0.05 * vh, -0.35),
-      new THREE.Vector3(1.2 * vw, 0.35 * vh, 0.3),
+      new THREE.Vector3((-1.3 + xOffset) * vw, 0.35 * vh, -0.3),
+      new THREE.Vector3((-0.95 + xOffset) * vw, 0.55 * vh, 0.4),
+      new THREE.Vector3((-0.55 + xOffset) * vw, 0.3 * vh, -0.4),
+      new THREE.Vector3((-0.15 + xOffset) * vw, 0.52 * vh, 0.5),
+      new THREE.Vector3((0.15 + xOffset) * vw, 0.1 * vh, -0.3),
+      new THREE.Vector3((0.5 + xOffset) * vw, 0.55 * vh, 0.4),
+      new THREE.Vector3((0.85 + xOffset) * vw, -0.05 * vh, -0.35),
+      new THREE.Vector3((1.2 + xOffset) * vw, 0.35 * vh, 0.3),
     ];
     const curve = new THREE.CatmullRomCurve3(points, false, "catmullrom", 0.55);
 
