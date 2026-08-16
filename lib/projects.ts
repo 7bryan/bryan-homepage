@@ -1,15 +1,33 @@
 export type Project = {
   slug: string;
+  // Kept for backward-compat with anything else on the site that might
+  // still read these (e.g. the home page's "Featured work" cards) — the
+  // new Projects grid below doesn't display them anymore.
   hash: string;
+  additions: number;
+  deletions: number;
+
   title: string;
   summary: string;
   description: string;
   tags: string[];
-  additions: number;
-  deletions: number;
   date: string;
   href?: string;
   featured?: boolean;
+
+  /**
+   * Path to a thumbnail image under /public, e.g. "/projects/devpulse.png".
+   * Drop the image file at that exact path and it'll just show up — no
+   * further code changes needed.
+   */
+  image?: string;
+  /** Small pill shown top-right of the card, e.g. "open source". Optional. */
+  category?: string;
+  /**
+   * Button label. Defaults to "View Source on GitHub" when `href` points
+   * at github.com, otherwise "Visit Site". Set explicitly to override.
+   */
+  ctaLabel?: string;
 };
 
 export const projects: Project[] = [
@@ -25,6 +43,7 @@ export const projects: Project[] = [
     deletions: 61,
     date: "2026-07",
     featured: true,
+    image: "/projects/devpulse.png",
   },
   {
     slug: "chess-web",
@@ -38,6 +57,7 @@ export const projects: Project[] = [
     deletions: 94,
     date: "2026-05",
     featured: true,
+    image: "/projects/chess-web.png",
   },
   {
     slug: "caelum",
@@ -51,6 +71,7 @@ export const projects: Project[] = [
     deletions: 40,
     date: "2026-03",
     featured: true,
+    image: "/projects/caelum.png",
   },
   {
     slug: "horeg-music",
@@ -59,10 +80,11 @@ export const projects: Project[] = [
     summary: "Discord music bot, refactored into a cog architecture",
     description:
       "Started as a single-file bot and was refactored into a multi-cog structure for maintainability, then deployed on Railway. Handles queueing, playback controls, and voice-channel lifecycle.",
-    tags: ["Python", "discord.py", "Railway"],
+    tags: ["Python", "discord.py", "Railway", "FFmpeg", "yt-dlp"],
     additions: 290,
     deletions: 175,
     date: "2025-12",
+    image: "/projects/horeg-music.png",
   },
   {
     slug: "tomatab",
@@ -75,6 +97,7 @@ export const projects: Project[] = [
     additions: 214,
     deletions: 22,
     date: "2025-10",
+    image: "/projects/tomatab.png",
   },
   {
     slug: "waste-track",
@@ -87,6 +110,7 @@ export const projects: Project[] = [
     additions: 168,
     deletions: 12,
     date: "2025-06",
+    image: "/projects/waste-track.png",
   },
 ];
 

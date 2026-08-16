@@ -1,73 +1,91 @@
-"use client";
-
-import { useState } from "react";
+import Image from "next/image";
 import type { Project } from "@/lib/projects";
 
+// Deterministic per-tag color so the same tag always renders the same
+// color across every card, without needing to hand-map every tech name.
+const TAG_PALETTE = [
+  "#7c93ff", // indigo (matches --color-accent)
+  "#5ec8a6", // teal
+  "#e0a458", // amber
+  "#e2637c", // rose
+  "#8f7cff", // violet
+  "#5eb8e0", // sky
+];
+
+function tagColor(tag: string) {
+  let hash = 0;
+  for (let i = 0; i < tag.length; i++) {
+    hash = (hash * 31 + tag.charCodeAt(i)) >>> 0;
+  }
+  return TAG_PALETTE[hash % TAG_PALETTE.length];
+}
+
 export default function CommitLog({ project }: { project: Project }) {
-  const [open, setOpen] = useState(false);
+  const ctaLabel =
+    project.ctaLabel ??
+    (project.href?.includes("github.com")
+      ? "View Source on GitHub"
+      : "Visit Site");
 
   return (
-    <li className="border border-edge rounded-lg bg-elevated overflow-hidden">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="w-full text-left px-4 sm:px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 hover:bg-overlay/50 transition-colors"
-      >
-        <span className="font-mono text-xs text-accent-amber shrink-0">
-          {project.hash}
-        </span>
-
-        <span className="flex-1 min-w-0">
-          <span className="block font-mono text-sm text-ink-100">
-            {project.title}
+    <li className="flex flex-col overflow-hidden rounded-xl border border-edge bg-elevated">
+      <div className="flex items-start justify-between gap-3 px-5 pt-5">
+        <h3 className="font-display text-lg text-ink-100">{project.title}</h3>
+        {project.category && (
+          <span className="shrink-0 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 font-mono text-[11px] text-accent">
+            {project.category}
           </span>
-          <span className="block text-xs text-ink-500 mt-0.5">
-            {project.summary}
-          </span>
-        </span>
+        )}
+      </div>
 
-        <span className="flex items-center gap-3 font-mono text-xs shrink-0">
-          <span className="text-accent-green">+{project.additions}</span>
-          <span className="text-accent-red">-{project.deletions}</span>
-          <span className="text-ink-700">{project.date}</span>
-          <span
-            className={`text-ink-500 transition-transform ${
-              open ? "rotate-90" : ""
-            }`}
-            aria-hidden
-          >
-            ›
-          </span>
-        </span>
-      </button>
+      {project.image && (
+        <div className="relative mx-5 mt-4 aspect-video overflow-hidden rounded-lg border border-edge-soft bg-base">
+          <Image
+            src={project.image}
+            alt={`${project.title} preview`}
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover"
+          />
+        </div>
+      )}
 
-      {open && (
-        <div className="px-4 sm:px-5 pb-5 pt-1 border-t border-edge/70 animate-fadeUp">
-          <p className="text-sm text-ink-300 leading-relaxed max-w-2xl">
-            {project.description}
-          </p>
-          <div className="flex flex-wrap gap-2 mt-4">
-            {project.tags.map((tag) => (
+      <div className="flex flex-1 flex-col px-5 pb-5 pt-4">
+        <p className="text-sm text-ink-300">{project.summary}</p>
+        <p className="mt-2 text-sm leading-relaxed text-ink-500">
+          {project.description}
+        </p>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          {project.tags.map((tag) => {
+            const color = tagColor(tag);
+            return (
               <span
                 key={tag}
-                className="font-mono text-[11px] px-2 py-1 rounded border border-edge text-ink-500 bg-overlay/60"
+                className="rounded-md border px-2 py-1 font-mono text-[11px]"
+                style={{
+                  color,
+                  borderColor: `${color}4D`, // ~30% opacity
+                  backgroundColor: `${color}1A`, // ~10% opacity
+                }}
               >
                 {tag}
               </span>
-            ))}
-          </div>
-          {project.href && (
-            <a
-              href={project.href}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-block mt-4 font-mono text-xs text-accent-blue hover:underline"
-            >
-              view source →
-            </a>
-          )}
+            );
+          })}
         </div>
-      )}
+
+        {project.href && (
+          <a
+            href={project.href}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-5 inline-flex w-fit items-center gap-2 rounded-md border border-edge px-4 py-2 text-sm text-ink-100 transition-colors hover:border-accent/40 hover:bg-accent/10"
+          >
+            {ctaLabel}
+          </a>
+        )}
+      </div>
     </li>
   );
 }
