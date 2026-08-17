@@ -43,6 +43,7 @@ export const projects: Project[] = [
     deletions: 61,
     date: "2026-07",
     featured: true,
+    href: "https://github.com/yourname/devpulse",
     image: "/projects/devpulse.png",
   },
   {
