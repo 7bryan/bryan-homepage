@@ -100,19 +100,6 @@ export const projects: Project[] = [
     date: "2025-10",
     image: "/projects/tomatab.png",
   },
-  {
-    slug: "waste-track",
-    hash: "5f7e112",
-    title: "WASTE-TRACK",
-    summary: "Go-based CLI for tracking waste collection",
-    description:
-      "A command-line waste tracking tool written in Go, with Indonesian-language output for local usability. Shipped with a full README and pseudocode documentation for the core routines.",
-    tags: ["Go", "CLI"],
-    additions: 168,
-    deletions: 12,
-    date: "2025-06",
-    image: "/projects/waste-track.png",
-  },
 ];
 
 export const featuredProjects = projects.filter((p) => p.featured);
