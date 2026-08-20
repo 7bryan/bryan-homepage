@@ -1,6 +1,9 @@
 const links = [
   { label: "GitHub", href: "https://github.com/7bryan" },
-  { label: "Email", href: "mailto:hello@example.com" },
+  {
+    label: "Email",
+    href: "mailto:bryananthonywong@student.telkomuniversity.ac.id",
+  },
 ];
 
 export default function Footer() {
