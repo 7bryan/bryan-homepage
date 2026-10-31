@@ -85,7 +85,9 @@ export const projects: Project[] = [
     additions: 290,
     deletions: 175,
     date: "2025-12",
-    image: "/projects/horeg-music.png",
+    featured: true,
+    href: "https://github.com/7bryan/horeg-music",
+    image: "",
   },
   {
     slug: "tomatab",
@@ -98,6 +100,8 @@ export const projects: Project[] = [
     additions: 214,
     deletions: 22,
     date: "2025-10",
+    featured: true,
+    href: "https://github.com/7bryan/tomatab",
     image: "/projects/tomatab.png",
   },
   {
@@ -120,6 +124,8 @@ export const projects: Project[] = [
     additions: 0,
     deletions: 0,
     date: "",
+    featured: true,
+    href: "https://github.com/7bryan/evermos-mini-api",
     image: "",
   },
 ];
