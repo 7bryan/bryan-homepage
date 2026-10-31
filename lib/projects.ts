@@ -100,6 +100,28 @@ export const projects: Project[] = [
     date: "2025-10",
     image: "/projects/tomatab.png",
   },
+  {
+    slug: "Evermos Mini API",
+    hash: "29a4d71",
+    title: "Evermos Mini API",
+    summary:
+      "A RESTful e-commerce backend API built with Go, Fiber, GORM, and MySQL, featuring JWT authentication, role-based access control, and transactional order processing.",
+    description:
+      "Developed as the final project for the Rakamin Academy x Evermos Backend Developer Virtual Internship. Implements a modular backend architecture with authentication, user and store management, product and category management, address handling, and transaction processing. Features include product snapshots, stock management, file uploads, pagination, filtering, and Indonesian region API integration. Built with a layered architecture separating domain logic, application services, repositories, HTTP delivery, and infrastructure.",
+    tags: [
+      "Go",
+      "Fiber",
+      "GORM",
+      "MySQL",
+      "REST API",
+      "JWT",
+      "Backend Development",
+    ],
+    additions: 0,
+    deletions: 0,
+    date: "",
+    image: "",
+  },
 ];
 
 export const featuredProjects = projects.filter((p) => p.featured);
