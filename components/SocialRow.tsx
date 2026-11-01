@@ -8,14 +8,14 @@ const socials = [
   },
   {
     label: "LinkedIn",
-    href: "https://linkedin.com",
+    href: "https://linkedin.com/in/bryananthonywong",
     icon: (
       <path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM.5 8.98h4.5V23H.5V8.98ZM8.5 8.98h4.31v1.92h.06c.6-1.13 2.07-2.33 4.26-2.33 4.56 0 5.4 3 5.4 6.9V23h-4.5v-6.7c0-1.6-.03-3.65-2.22-3.65-2.23 0-2.57 1.74-2.57 3.53V23H8.5V8.98Z" />
     ),
   },
   {
     label: "Email",
-    href: "mailto:hello@example.com",
+    href: "mailto:bryananthonywong@student.telkomuniversity.ac.id",
     icon: (
       <path d="M2 5h20a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm1.4 2 8.6 6.2L20.6 7H3.4ZM21 8.4l-8.42 6.07a1 1 0 0 1-1.16 0L3 8.4V17h18V8.4Z" />
     ),
