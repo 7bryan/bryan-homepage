@@ -25,20 +25,24 @@ const socials = [
 export default function SocialRow() {
   return (
     <div className="flex items-center gap-2.5">
-      {socials.map((s) => (
-        <a
-          key={s.label}
-          href={s.href}
-          target="_blank"
-          rel="noreferrer"
-          aria-label={s.label}
-          className="w-10 h-10 flex items-center justify-center rounded-lg border border-edge bg-white/[0.03] text-ink-500 hover:text-ink-100 hover:bg-white/[0.06] transition-colors"
-        >
-          <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-            {s.icon}
-          </svg>
-        </a>
-      ))}
+      {socials.map((s) => {
+        const isMail = s.href.startsWith("mailto:");
+
+        return (
+          <a
+            key={s.label}
+            href={s.href}
+            target={isMail ? "_self" : "_blank"}
+            rel={isMail ? undefined : "noopener noreferrer"}
+            aria-label={s.label}
+            className="w-10 h-10 flex items-center justify-center rounded-lg border border-edge bg-white/[0.03] text-ink-500 hover:text-ink-100 hover:bg-white/[0.06] transition-colors"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+              {s.icon}
+            </svg>
+          </a>
+        );
+      })}
     </div>
   );
 }
