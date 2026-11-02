@@ -14,8 +14,8 @@ export default function HomePage() {
           </h1>
 
           <p className="mt-5 text-ink-300 text-base sm:text-lg leading-relaxed max-w-xl">
-            Full-stack &amp; systems developer, building web apps, tools, and
-            the occasional CLI — with a running interest in security.
+            Backend developer building APIs and services in Go and Python, with
+            full-stack experience and a growing interest in security.
           </p>
 
           <p className="mt-6 font-display text-lg sm:text-xl text-ink-100">
