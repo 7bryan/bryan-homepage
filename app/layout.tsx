@@ -22,7 +22,7 @@ const sans = Inter({
 export const metadata: Metadata = {
   title: "Bryan — Developer",
   description:
-    "Personal site and portfolio of Bryan — full-stack & systems development, security, and CTF.",
+    "Personal site and portfolio of Bryan — backend development, & full-stack web apps, and a growing interest in security.",
 };
 
 export default function RootLayout({
