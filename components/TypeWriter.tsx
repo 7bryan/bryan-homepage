@@ -12,8 +12,8 @@ type Props = {
 
 export default function TypeWriter({
   phrases,
-  typeSpeed = 55,
-  deleteSpeed = 28,
+  typeSpeed = 75,
+  deleteSpeed = 50,
   holdMs = 1800,
   startDelay = 350,
 }: Props) {
