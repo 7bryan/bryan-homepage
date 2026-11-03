@@ -16,20 +16,19 @@ export default function AboutPage() {
           </h1>
 
           <p className="mt-6 text-ink-300 text-base leading-relaxed">
-            I&apos;m a developer working across the web and systems layer, with
-            a growing interest in security. Most of what I build starts as a
-            personal itch: a tool I wanted, a game I wanted to remaster, a habit
-            I wanted to track. I like projects small enough to finish and
-            interesting enough to keep tinkering with after they&apos;re
-            &quot;done.&quot;
+            I&apos;m a backend developer who also works across the full stack,
+            with a growing interest in security. Most of what I build starts as
+            a personal itch: an API I wanted to design, a game I wanted to
+            remaster, a habit I wanted to track. I like projects small enough to
+            finish and interesting enough to keep tinkering with after
+            they&apos;re &quot;done.&quot;
           </p>
 
           <p className="mt-4 text-ink-300 text-base leading-relaxed">
-            Outside of shipping projects, I compete in CTF competitions:
-            forensics, crypto, and misc challenges that reward reading carefully
-            and trying the obvious thing before the clever one. That same
-            instinct shows up in how I build: start simple, make it work, then
-            make it good.
+            On the side, I play CTFs (forensics, crypto, and misch challenges)
+            which reward reading carefully and trying the obvious thing before
+            the clever one. Than same instinct shows up in how I build: start
+            simple, make it work, then make it good.
           </p>
         </div>
 
