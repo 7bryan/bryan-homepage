@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* Colors — near-black, mostly grayscale, one restrained accent */
+  /* Colors. near-black, mostly grayscale, one restrained accent */
   --color-base: #0a0a0c;
   --color-edge: rgba(255, 255, 255, 0.09);
   --color-edge-soft: rgba(255, 255, 255, 0.05);
@@ -12,6 +12,8 @@
   --color-ink-700: #434449;
 
   --color-accent: #7c93ff;
+
+  --color-elevated: #14141a;
 
   /* Fonts */
   --font-display: var(--font-display), sans-serif;
