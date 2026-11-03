@@ -1,6 +1,7 @@
 import Link from "next/link";
 import SocialRow from "@/components/SocialRow";
 import { featuredProjects } from "@/lib/projects";
+import TypeWriter from "@/components/TypeWriter";
 
 export default function HomePage() {
   return (
@@ -18,9 +19,15 @@ export default function HomePage() {
             full-stack experience and a growing interest in security.
           </p>
 
-          <p className="mt-6 font-display text-lg sm:text-xl text-ink-100">
-            I build things, break things in CTFs, and write it down
-            <span className="inline-block w-[2px] h-5 -mb-1 ml-1 bg-accent animate-blink align-middle" />
+          <p className="mt-6 font-display text-lg sm:text-xl text-ink-100 min-h-[1.75rem]">
+            <TypeWriter
+              phrases={[
+                "I build APIs and backend services.",
+                "I design clean, reliable REST APIs.",
+                "I ship full-stack apps end to end.",
+                "I learn security through CTFs on the side.",
+              ]}
+            />
           </p>
 
           <div className="mt-10 flex flex-wrap items-center gap-4">
