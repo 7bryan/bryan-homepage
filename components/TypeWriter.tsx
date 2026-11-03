@@ -1,23 +1,21 @@
 "use client";
 
-import { Span } from "next/dist/trace";
-import { types } from "node:util";
 import { useEffect, useState } from "react";
 
 type Props = {
   phrases: string[];
   typeSpeed?: number;
   deleteSpeed?: number;
-  holdMs?: number; // pause after fully typed
+  holdMs?: number; // pause once a phrase is fully typed
   startDelay?: number;
 };
 
 export default function TypeWriter({
   phrases,
   typeSpeed = 55,
-  deleteSpeed = 30,
-  holdMs = 1000,
-  startDelay = 0,
+  deleteSpeed = 28,
+  holdMs = 1800,
+  startDelay = 350,
 }: Props) {
   const [text, setText] = useState("");
   const [index, setIndex] = useState(0);
@@ -40,7 +38,7 @@ export default function TypeWriter({
     let timeout: ReturnType<typeof setTimeout> | undefined;
 
     if (!deleting) {
-      if (text == full) {
+      if (text === full) {
         if (phrases.length === 1) return;
         timeout = setTimeout(() => setDeleting(true), holdMs);
       } else {
@@ -65,6 +63,7 @@ export default function TypeWriter({
   }, [
     text,
     deleting,
+    index,
     phrases,
     reduceMotion,
     typeSpeed,
@@ -75,9 +74,9 @@ export default function TypeWriter({
 
   return (
     <>
-      {/* screen renders a stable sentence */}
+      {/* Screen readers get a stable sentence */}
       <span className="sr-only">{phrases[0]}</span>
-      <span aria-hidden>{text} </span>
+      <span aria-hidden>{text}</span>
       <span
         aria-hidden
         className="inline-block w-[2px] h-5 -mb-1 ml-1 bg-accent animate-blink align-middle"
