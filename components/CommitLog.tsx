@@ -51,11 +51,12 @@ function ExternalLinkIcon() {
 
 export default function CommitLog({ project }: { project: Project }) {
   const isGithub = project.href?.includes("github.com") ?? false;
-  const ctaLabel = project.ctaLabel ?? (isGithub ? "View Source on GitHub" : "Visit Site");
+  const ctaLabel =
+    project.ctaLabel ?? (isGithub ? "View Source on GitHub" : "Visit Site");
 
   return (
     <li
-      className="group flex flex-col overflow-hidden rounded-xl border border-edge bg-elevated transition-colors duration-200 hover:border-[var(--hover-green)] hover:shadow-[0_0_24px_-10px_var(--hover-green)]"
+      className="group flex flex-col overflow-hidden rounded-xl border border-edge bg-elevated/50 backdrop-blur-md transition-colors duration-200 hover:border-[var(--hover-green)] hover:shadow-[0_0_24px_-10px_var(--hover-green)]"
       style={{ ["--hover-green" as string]: HOVER_GREEN }}
     >
       <div className="flex items-start justify-between gap-3 px-5 pt-5">
